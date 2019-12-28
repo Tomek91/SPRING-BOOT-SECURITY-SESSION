@@ -4,6 +4,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -69,6 +70,23 @@ public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptio
                         )
                         .build(),
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public final ResponseEntity<Object> handleAccessDeniedExceptions(AccessDeniedException ex, WebRequest request) {
+
+        return new ResponseEntity<>(
+                ResponseMessage
+                        .builder()
+                        .exceptionMessage(
+                                ExceptionMessage
+                                        .builder()
+                                        .exceptionInfo(new ExceptionInfo(ExceptionCode.ACCESS_DENIED, "ACCESS DENIED"))
+                                        .path(request.getDescription(false))
+                                        .build()
+                        )
+                        .build(),
+                HttpStatus.FORBIDDEN);
     }
 }
 

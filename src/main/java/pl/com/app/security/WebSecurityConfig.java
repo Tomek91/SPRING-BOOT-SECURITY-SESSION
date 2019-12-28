@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -58,13 +59,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/security/**").permitAll()
+                .antMatchers("/testUser/**").hasRole("USER")
+                .antMatchers("/testAdmin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
 
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler())
-
                 .and()
+
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), tokenService))
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), tokenService, mappingJackson2HttpMessageConverter));
     }
@@ -84,7 +87,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return (httpServletRequest, httpServletResponse, e) -> {
-            httpServletResponse.sendRedirect("/accessDenied");
+            throw new AccessDeniedException("ACCESS DENIED");
         };
     }
 
